@@ -550,7 +550,7 @@ export default function Videoannotator({
     }, [currentUser]);
 
     // Enhanced AWS Signature V4 implementation
-    const generateSignedUrl = useCallback(async (bucket, key, region, accessKey, secretKey, sessionToken) => {
+    const generateSignedUrl = useCallback(async (bucket, key, region, accessKey, secretKey) => {
         try {
             console.log(`🔗 [Widget ${widgetInstanceId}] Generating signed URL for:`, { bucket, key: key.substring(0, 50) + '...' });
             
@@ -574,9 +574,6 @@ export default function Videoannotator({
             queryParams.set('X-Amz-Date', amzDate);
             queryParams.set('X-Amz-Expires', '3600');
             queryParams.set('X-Amz-SignedHeaders', 'host');
-            if (sessionToken) {
-                queryParams.set('X-Amz-Security-Token', sessionToken)
-            }
             
             const canonicalQuerystring = queryParams.toString();
             const canonicalHeaders = `host:${bucket}.s3.${region}.amazonaws.com\n`;
