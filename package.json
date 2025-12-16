@@ -1,0 +1,98 @@
+{
+  "name": "videoannotator",
+  "widgetName": "Videoannotator",
+  "version": "1.0.0",
+  "description": "Video annotator for the give S3 video",
+  "copyright": "Lowcode Labs",
+  "author": "Muka",
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT",
+  "config": {
+    "projectPath": "./tests/testProject",
+    "mendixHost": "http://localhost:8080",
+    "developmentPort": 3000
+  },
+  "packagePath": "lowcode-labs",
+  "scripts": {
+    "start": "pluggable-widgets-tools start:server",
+    "dev": "pluggable-widgets-tools start:web",
+    "build": "pluggable-widgets-tools build:web",
+    "lint": "pluggable-widgets-tools lint",
+    "lint:fix": "pluggable-widgets-tools lint:fix",
+    "prerelease": "npm run lint",
+    "release": "pluggable-widgets-tools release:web",
+    "test": "pluggable-widgets-tools test:unit",
+    "test:watch": "pluggable-widgets-tools test:unit --watch",
+    "precommit": "lint-staged"
+  },
+  "devDependencies": {
+    "@mendix/pluggable-widgets-tools": "^10.15.0",
+    "lint-staged": "^13.0.0"
+  },
+  "dependencies": {
+    "classnames": "^2.2.6",
+    "prop-types": "^15.8.1",
+    "crypto-js": "^4.2.0"
+  },
+  "resolutions": {
+    "react": "^18.2.0",
+    "react-native": "0.72.7",
+    "react-dom": "18.2.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0"
+  },
+  "overrides": {
+    "react": "^18.2.0",
+    "react-native": "0.72.7",
+    "react-dom": "18.2.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "pluggable-widgets-tools lint:fix",
+      "git add"
+    ]
+  },
+  "keywords": [
+    "mendix",
+    "widget",
+    "video",
+    "annotation",
+    "s3",
+    "video-player",
+    "comments",
+    "timeline",
+    "aws",
+    "s3-integration"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lowcode-labs/videoannotator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lowcode-labs/videoannotator/issues"
+  },
+  "homepage": "https://github.com/lowcode-labs/videoannotator#readme",
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "ie >= 11"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

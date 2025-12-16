@@ -1,0 +1,2259 @@
+/*
+Enhanced Video & Audio Annotator - FIXED POSITIONING & Z-INDEX VERSION - Complete Class-Based Styling for Mendix Studio Pro Customization
+UPDATED: Fixed video positioning logic with object-fit: contain for accurate annotation placement + FIXED Z-INDEX VALUES MATCHING PDF ANNOTATOR
+*/
+
+.mx-videoannotator {
+    font-family: system-ui, -apple-system, sans-serif;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --background-light: #f9fafb;
+    --annotation-color: #3B82F6;
+    position: relative;
+}
+
+/* Enhanced widget isolation for multiple instances */
+.mx-videoannotator[data-widget-id] {
+    isolation: isolate;
+}
+
+.mx-videoannotator[data-widget-id] * {
+    box-sizing: border-box;
+}
+
+/* REVISED: Full interface layout with white background */
+.mx-videoannotator {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+    background-color: white; /* CHANGED: White background instead of gradient */
+    position: relative;
+    overflow: hidden;
+}
+
+/* NEW: Video-specific header bar that only covers the video area */
+.mx-videoannotator .video-header-bar {
+    background: white; /* CHANGED: White background */
+    border: 1px solid var(--border-color);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    margin-bottom: 0;
+}
+
+.mx-videoannotator .video-header-bar .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mx-videoannotator .video-header-bar .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Base button styles for video annotator */
+.mx-videoannotator .video-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mx-videoannotator .video-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mx-videoannotator .video-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mx-videoannotator .video-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Maximize/Minimize button styles */
+.mx-videoannotator .video-maximize-minimize-btn {
+    background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+    color: white;
+    border: 2px solid transparent;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.mx-videoannotator .video-maximize-minimize-btn:hover {
+    background: linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mx-videoannotator .video-maximize-btn {
+    background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+}
+
+.mx-videoannotator .video-maximize-btn:hover {
+    background: linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%);
+}
+
+.mx-videoannotator .video-minimize-btn {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.mx-videoannotator .video-minimize-btn:hover {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+}
+
+/* Add annotation button and dropdown */
+.mx-videoannotator .add-dropdown-container {
+    position: relative;
+}
+
+.mx-videoannotator .add-annotations-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 101;
+}
+
+.mx-videoannotator .add-annotations-btn:hover:not(:disabled) {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+}
+
+.mx-videoannotator .add-annotations-btn:active {
+    transform: translateY(0);
+}
+
+.mx-videoannotator .add-annotations-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mx-videoannotator .add-annotations-btn.annotation-mode {
+    background-color: #ef4444;
+}
+
+.mx-videoannotator .add-annotations-btn.annotation-mode:hover {
+    background-color: #dc2626;
+}
+
+/* FIXED: Dropdown menu - use moderate z-index like PDF Annotator */
+.mx-videoannotator .annotation-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* FIXED: Moderate z-index like PDF Annotator */
+    min-width: 160px;
+    padding: 4px 0;
+    margin-top: 2px;
+}
+
+.mx-videoannotator .dropdown-menu-item {
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background-color: transparent;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+}
+
+.mx-videoannotator .dropdown-menu-item:hover {
+    background-color: var(--background-light);
+}
+
+.mx-videoannotator .dropdown-menu-item:active {
+    background-color: #e5e7eb;
+}
+
+/* REVISED: Main content area - removed top margin since no global header */
+.mx-videoannotator .main-content {
+    flex: 1;
+    display: flex;
+    background-color: white;
+    height: 100vh; /* CHANGED: Full height since no global header */
+    max-height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* REVISED: Video area with integrated header - optimized for space */
+.mx-videoannotator .video-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px; /* REDUCED: Less padding for more video space */
+    padding-top: 16px; /* CHANGED: Consistent padding since no global header */
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* REVISED: Video container with border and styling - optimized for full screen */
+.mx-videoannotator .video-container {
+    flex: 1;
+    position: relative;
+    border-radius: 0 0 16px 16px; /* CHANGED: Only bottom corners rounded */
+    border: 1px solid var(--border-color);
+    border-top: none; /* CHANGED: No top border since header has it */
+    overflow: hidden;
+    padding: 8px; /* REDUCED: Minimal padding for maximum video space */
+    min-height: 0;
+    height: 100%;
+    max-height: calc(100vh - 160px); /* INCREASED: More space for video */
+    background-color: white; /* CHANGED: White background */
+}
+
+/* FIXED: Video wrapper optimized for maximum space utilization with proper positioning */
+.mx-videoannotator .video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: white; /* CHANGED: White background */
+    border-radius: 8px; /* REDUCED: Smaller border radius for more space */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px; /* INCREASED: Larger minimum height */
+    max-height: 100%;
+    border: 1px solid var(--border-color); /* ADDED: Border for better definition */
+}
+
+.mx-videoannotator .video-container-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+/* FIXED: Main video with object-fit: contain for accurate positioning */
+.mx-videoannotator .main-video {
+    width: 100%;
+    height: 100%;
+    cursor: default;
+    display: block;
+    object-fit: contain; /* FIXED: Changed from cover to contain for accurate annotation positioning */
+    object-position: center;
+    border-radius: 4px;
+    background-color: #000; /* ADDED: Black background for letterboxing */
+}
+
+.mx-videoannotator .main-video.annotation-mode {
+    cursor: crosshair;
+}
+
+/* Audio Player Styles with white background theme */
+.mx-videoannotator .audio-player-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: white; /* CHANGED: White background instead of dark gradient */
+    border: 2px solid var(--border-color); /* ADDED: Border for definition */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 400px;
+    box-sizing: border-box;
+}
+
+.mx-videoannotator .audio-player-container:hover {
+    background: var(--background-light); /* CHANGED: Light hover state */
+    border-color: var(--primary-color);
+    transform: scale(1.02);
+}
+
+.mx-videoannotator .audio-player-container audio {
+    display: none;
+}
+
+.mx-videoannotator .audio-visualization {
+    text-align: center;
+    color: var(--text-primary); /* CHANGED: Dark text for white background */
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.mx-videoannotator .audio-icon {
+    font-size: 120px;
+    margin-bottom: 20px;
+    animation: audioPulse 2s ease-in-out infinite;
+    filter: none; /* REMOVED: White drop shadow */
+    color: var(--primary-color); /* ADDED: Blue color for the icon */
+}
+
+@keyframes audioPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+.mx-videoannotator .audio-info {
+    text-align: center;
+    width: 100%;
+}
+
+.mx-videoannotator .audio-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: var(--text-primary); /* CHANGED: Dark text */
+    text-shadow: none; /* REMOVED: Text shadow */
+}
+
+.mx-videoannotator .audio-description {
+    font-size: 16px;
+    color: var(--text-secondary); /* CHANGED: Secondary text color */
+    margin: 0 auto;
+    line-height: 1.6;
+    max-width: 400px;
+    text-shadow: none; /* REMOVED: Text shadow */
+}
+
+.mx-videoannotator .playing-indicator {
+    background: linear-gradient(45deg, #10b981, #059669);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: 600;
+    animation: playingGlow 1.5s ease-in-out infinite alternate;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+@keyframes playingGlow {
+    0% {
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+    100% {
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        transform: translateY(-2px);
+    }
+}
+
+/* Audio mode specific adjustments */
+.mx-videoannotator.audio-mode .video-wrapper {
+    background: transparent;
+}
+
+.mx-videoannotator.audio-mode .video-overlays {
+    display: none;
+}
+
+/* Enhanced Video Loading with white background */
+.mx-videoannotator .video-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background-color: white; /* CHANGED: White background */
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 60px 40px;
+    text-align: center;
+}
+
+.mx-videoannotator .loading-spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.mx-videoannotator .loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #e3e3e3;
+    border-top: 4px solid #4F46E5;
+    border-radius: 50%;
+    animation: videoannotator-spin 1s linear infinite;
+    margin-bottom: 24px;
+}
+
+.mx-videoannotator .loading-text {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #4F46E5;
+    letter-spacing: 0.5px;
+}
+
+/* Enhanced spinner animation */
+@keyframes videoannotator-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast notification animation */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Additional loading states */
+.mx-videoannotator .loading-subtext {
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    color: #9CA3AF;
+    font-style: italic;
+}
+
+/* FIXED: Video overlays with proper positioning for contain mode */
+.mx-videoannotator .video-overlays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* ADDED: Prevent overflow of positioned elements */
+}
+
+/* FIXED: Point annotation markers with enhanced positioning for percentage-based layout */
+.mx-videoannotator .annotation-marker {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+    z-index: 15;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    opacity: 0.9;
+    background-color: var(--annotation-color);
+    pointer-events: auto;
+    /* FIXED: No transform translate - positioning handled by JavaScript percentage calculation */
+}
+
+.mx-videoannotator .annotation-marker:hover {
+    transform: scale(1.15); /* UPDATED: Only scale on hover */
+    opacity: 1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.mx-videoannotator .annotation-marker.active {
+    transform: scale(1.2); /* UPDATED: Only scale on active */
+    opacity: 1;
+    z-index: 20;
+    box-shadow: 0 0 20px var(--annotation-color);
+}
+
+.mx-videoannotator .annotation-marker.visible {
+    opacity: 1;
+    transform: scale(1.1); /* UPDATED: Only scale on visible */
+}
+
+.mx-videoannotator .annotation-marker.selected {
+    background-color: #10b981;
+    transform: scale(1.3); /* UPDATED: Only scale on selected */
+    opacity: 1;
+}
+
+/* Toast notification styles */
+.mx-videoannotator .toast-notification {
+    font-family: inherit;
+    user-select: none;
+}
+
+.mx-videoannotator .toast-notification.success {
+    background-color: #10b981 !important;
+}
+
+.mx-videoannotator .toast-notification.error {
+    background-color: #ef4444 !important;
+}
+
+.mx-videoannotator .toast-notification.info {
+    background-color: #3b82f6 !important;
+}
+
+.mx-videoannotator .toast-notification button:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50%;
+}
+
+/* Enhanced annotation markers for maximized view */
+.mx-videoannotator.video-maximized .annotation-marker {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    border-width: 3px;
+}
+
+.mx-videoannotator.video-maximized .annotation-marker:hover {
+    transform: scale(1.2);
+}
+
+.mx-videoannotator.video-maximized .annotation-marker.active {
+    transform: scale(1.3);
+}
+
+/* Mode indicator with better positioning */
+.mx-videoannotator .mode-indicator {
+    position: absolute;
+    background-color: rgba(239, 68, 68, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(4px);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Bottom controls with white background */
+.mx-videoannotator .bottom-controls {
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    margin-top: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.mx-videoannotator .timeline-container {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.mx-videoannotator .timeline-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--border-color);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.mx-videoannotator .timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.mx-videoannotator .timeline-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.mx-videoannotator .timeline-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 6px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .timeline-marker:hover {
+    background-color: #dc2626;
+    transform: translateX(-50%) scale(1.2);
+}
+
+.mx-videoannotator .control-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.mx-videoannotator .playback-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.mx-videoannotator .control-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .control-btn:hover:not(:disabled) {
+    background-color: var(--background-light);
+    transform: translateY(-1px);
+}
+
+.mx-videoannotator .control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mx-videoannotator .control-btn:disabled:hover {
+    background-color: white;
+    transform: none;
+}
+
+.mx-videoannotator .play-pause-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background-color: #3b82f6;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .play-pause-btn:hover:not(:disabled) {
+    background-color: #2563eb;
+    transform: scale(1.05);
+}
+
+.mx-videoannotator .play-pause-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mx-videoannotator .play-pause-btn:disabled:hover {
+    background-color: #3b82f6;
+    transform: none;
+}
+
+.mx-videoannotator .time-display {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: monospace;
+}
+
+/* Enhanced Annotations sidebar */
+.mx-videoannotator .annotations-sidebar {
+    flex: 0 0 350px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border-color);
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.mx-videoannotator .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mx-videoannotator .sidebar-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.mx-videoannotator .annotation-count-badge {
+    background-color: #3b82f6;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.mx-videoannotator .annotations-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    max-height: calc(100vh - 300px);
+}
+
+.mx-videoannotator .annotation-item {
+    margin-bottom: 16px;
+    cursor: pointer;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .annotation-item:hover {
+    background-color: var(--background-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mx-videoannotator .annotation-item.selected {
+    background-color: #f0f9ff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+.mx-videoannotator .annotation-item.current {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+.mx-videoannotator .annotation-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.mx-videoannotator .title-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mx-videoannotator .annotation-number {
+    color: #3b82f6;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.mx-videoannotator .annotation-type {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.mx-videoannotator .timestamp {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.mx-videoannotator .current-badge {
+    background-color: #3b82f6;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+.mx-videoannotator .action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.mx-videoannotator .action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .action-btn:hover {
+    transform: scale(1.1);
+}
+
+.mx-videoannotator .edit-btn {
+    background-color: #f59e0b;
+}
+
+.mx-videoannotator .edit-btn:hover {
+    background-color: #d97706;
+}
+
+.mx-videoannotator .delete-btn {
+    background-color: #6b7280;
+}
+
+.mx-videoannotator .delete-btn:hover {
+    background-color: #4b5563;
+}
+
+.mx-videoannotator .annotation-content {
+    margin-bottom: 12px;
+}
+
+.mx-videoannotator .annotation-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+/* Read More/Read Less Styles */
+.mx-videoannotator .read-more-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-top: 8px;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.mx-videoannotator .read-more-btn:hover {
+    color: #2563eb;
+}
+
+.mx-videoannotator .annotation-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.mx-videoannotator .author {
+    font-weight: 500;
+}
+
+.mx-videoannotator .date {
+    font-weight: normal;
+}
+
+.mx-videoannotator .no-annotations {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+/* FIXED: Modal overlay with moderate z-index like PDF Annotator */
+.mx-videoannotator .annotation-form-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000; /* FIXED: Use same as PDF Annotator */
+    backdrop-filter: blur(4px);
+}
+
+.mx-videoannotator .annotation-form-modal {
+    background-color: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    z-index: 10001; /* FIXED: Slightly higher than overlay */
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mx-videoannotator .annotation-form-header {
+    background-color: #f8fafc;
+    color: #1e293b;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.mx-videoannotator .annotation-form-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.mx-videoannotator .annotation-form-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background-color: #f1f5f9;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .annotation-form-close:hover {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+.mx-videoannotator .annotation-form-body {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.mx-videoannotator .form-section {
+    margin-bottom: 24px;
+}
+
+.mx-videoannotator .form-section:last-child {
+    margin-bottom: 0;
+}
+
+.mx-videoannotator .form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.mx-videoannotator .form-section-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.mx-videoannotator .comment-form-group {
+    margin-bottom: 20px;
+}
+
+.mx-videoannotator .comment-form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+/* Rich Text Editor Styles - Matching Image Annotator */
+.mx-videoannotator .richtext-toolbar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.mx-videoannotator .richtext-btn {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    background-color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    color: #374151;
+}
+
+.mx-videoannotator .richtext-btn:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.mx-videoannotator .richtext-btn:active {
+    background-color: #e5e7eb;
+}
+
+/* Rich Text Editor Main Styles - Matching Image Annotator */
+.mx-videoannotator .richtext-editor {
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    background-color: white;
+    font-size: 14px;
+    line-height: 1.6;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    width: 100%;
+    color: #374151;
+    display: block;
+    position: relative;
+}
+
+.mx-videoannotator .richtext-editor:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Placeholder Text - Matching Image Annotator */
+.mx-videoannotator .richtext-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    font-style: italic;
+    pointer-events: none;
+    position: absolute;
+    left: 16px;
+    top: 16px;
+}
+
+.mx-videoannotator .richtext-editor:focus:empty::before {
+    opacity: 0.5;
+}
+
+/* Rich text content styling */
+.mx-videoannotator .richtext-editor p {
+    margin: 0 0 8px 0;
+    color: #374151;
+}
+
+.mx-videoannotator .richtext-editor p:last-child {
+    margin-bottom: 0;
+}
+
+.mx-videoannotator .richtext-editor strong {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.mx-videoannotator .richtext-editor em {
+    font-style: italic;
+}
+
+.mx-videoannotator .richtext-editor ul {
+    margin: 8px 0;
+    padding-left: 20px;
+    color: #374151;
+}
+
+.mx-videoannotator .richtext-editor li {
+    margin: 4px 0;
+}
+
+.mx-videoannotator .richtext-editor a {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
+/* Enhanced annotation display with rich text support */
+.mx-videoannotator .annotation-rich-content {
+    margin: 8px 0;
+}
+
+.mx-videoannotator .annotation-rich-content p {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #374151;
+}
+
+.mx-videoannotator .annotation-rich-content strong {
+    font-weight: 600;
+}
+
+.mx-videoannotator .annotation-rich-content em {
+    font-style: italic;
+}
+
+.mx-videoannotator .annotation-rich-content ul {
+    margin: 4px 0;
+    padding-left: 16px;
+}
+
+.mx-videoannotator .annotation-rich-content a {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
+/* File Upload Styles - Matching Image Annotator */
+.mx-videoannotator .file-upload-area {
+    margin-bottom: 16px;
+}
+
+.mx-videoannotator .file-input {
+    display: none !important;
+}
+
+.mx-videoannotator .file-upload-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.mx-videoannotator .file-upload-btn:hover {
+    border-color: #3b82f6;
+    background-color: #f0f9ff;
+    color: #3b82f6;
+}
+
+.mx-videoannotator .uploaded-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.mx-videoannotator .uploaded-file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.mx-videoannotator .file-icon {
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+.mx-videoannotator .file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    margin-right: 8px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mx-videoannotator .file-size {
+    font-size: 12px;
+    color: #6b7280;
+    margin-right: 8px;
+}
+
+.mx-videoannotator .file-remove-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mx-videoannotator .file-remove-btn:hover {
+    background-color: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Reference Document Styles - Enhanced z-index */
+.mx-videoannotator .reference-search-container {
+    position: relative;
+    width: 100%;
+}
+
+.mx-videoannotator .reference-search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.mx-videoannotator .reference-search-input {
+    width: 100%;
+    padding: 12px 16px;
+    padding-right: 50px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    background-color: white;
+    color: #374151;
+}
+
+.mx-videoannotator .reference-search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.mx-videoannotator .reference-search-input::placeholder {
+    color: #9ca3af;
+}
+
+.mx-videoannotator .reference-dropdown-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+    padding: 4px;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.mx-videoannotator .reference-dropdown-arrow:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.mx-videoannotator .reference-clear-button {
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 50%;
+    background-color: #ef4444;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 3;
+}
+
+.mx-videoannotator .reference-clear-button:hover {
+    background-color: #dc2626;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* FIXED: Reference dropdown with moderate z-index like PDF Annotator */
+.mx-videoannotator .reference-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border: 2px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+    z-index: 1001; /* FIXED: Moderate z-index like PDF Annotator */
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: -1px;
+}
+
+.mx-videoannotator .reference-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.mx-videoannotator .reference-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.mx-videoannotator .reference-dropdown-item:hover {
+    background-color: #f0f9ff;
+    color: #1e40af;
+}
+
+.mx-videoannotator .reference-doc-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.mx-videoannotator .reference-doc-name {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.4;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mx-videoannotator .reference-dropdown-item:hover .reference-doc-name {
+    color: #1e40af;
+}
+
+.mx-videoannotator .reference-no-results {
+    padding: 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 14px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* User display */
+.mx-videoannotator .user-display {
+    font-size: 12px;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 16px;
+    padding: 8px 12px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.mx-videoannotator .annotation-form-footer {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    flex-shrink: 0;
+}
+
+.mx-videoannotator .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.mx-videoannotator .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mx-videoannotator .btn:active {
+    transform: translateY(0);
+}
+
+.mx-videoannotator .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mx-videoannotator .btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.mx-videoannotator .btn-save {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.mx-videoannotator .btn-save:hover:not(:disabled) {
+    background-color: #2563eb;
+}
+
+.mx-videoannotator .btn-cancel {
+    background-color: #6b7280;
+    color: white;
+}
+
+.mx-videoannotator .btn-cancel:hover {
+    background-color: #4b5563;
+}
+
+/* Annotation files display */
+.mx-videoannotator .annotation-files {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background-color: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.mx-videoannotator .annotation-files-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.mx-videoannotator .annotation-file-item {
+    font-size: 12px;
+    color: #4b5563;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mx-videoannotator .annotation-file-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Reference document display */
+.mx-videoannotator .annotation-reference-doc {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background-color: #f0f9ff;
+    border-radius: 6px;
+    border: 1px solid #0ea5e9;
+}
+
+.mx-videoannotator .reference-doc-item {
+    font-size: 12px;
+    color: #0369a1;
+    padding: 4px 8px;
+    background-color: #e0f2fe;
+    border-radius: 4px;
+    border: 1px solid #0ea5e9;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .reference-doc-item:hover {
+    background-color: #bae6fd;
+}
+
+/* Clickable file styles */
+.mx-videoannotator .clickable-file {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 2px 0;
+    display: inline-block;
+}
+
+.mx-videoannotator .clickable-file:hover {
+    background-color: #f3f4f6;
+    color: #3b82f6;
+    transform: translateX(4px);
+}
+
+.mx-videoannotator .clickable-file:active {
+    transform: translateX(2px);
+}
+
+/* FIXED: File Preview Modal with moderate z-index like PDF Annotator */
+.mx-videoannotator .file-preview-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000; /* FIXED: Same as PDF Annotator */
+    backdrop-filter: blur(4px);
+}
+
+.mx-videoannotator .file-preview-modal {
+    background-color: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease-out;
+    z-index: 20001; /* FIXED: Slightly higher than overlay */
+}
+
+.mx-videoannotator .file-preview-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.mx-videoannotator .file-preview-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 16px;
+}
+
+.mx-videoannotator .file-preview-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .file-preview-close:hover {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.mx-videoannotator .file-preview-content {
+    flex: 1;
+    padding: 24px;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mx-videoannotator .file-preview-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+.mx-videoannotator .file-preview-loading .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e3e3e3;
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    animation: videoannotator-spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+.mx-videoannotator .file-preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mx-videoannotator .file-preview-pdf {
+    width: 100%;
+    height: 600px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mx-videoannotator .file-preview-download {
+    text-align: center;
+    padding: 40px;
+}
+
+.mx-videoannotator .file-preview-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.mx-videoannotator .file-preview-download p {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    color: #6b7280;
+}
+
+.mx-videoannotator .file-preview-download-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.mx-videoannotator .file-preview-download-btn:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* REVISED: Maximized state styles with white background and moderate z-index */
+.mx-videoannotator.video-maximized {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1000 !important; /* FIXED: Moderate z-index */
+    background: white;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+.mx-videoannotator.video-maximized .main-content {
+    height: 100vh !important; /* CHANGED: Full height since no global header */
+    max-height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+}
+
+.mx-videoannotator.video-maximized .video-area {
+    flex: 1;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    padding: 8px; /* REDUCED: Less padding for maximum video space */
+    overflow: hidden !important;
+}
+
+.mx-videoannotator.video-maximized .video-container {
+    flex: 1;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 8px; /* REDUCED: Smaller border radius */
+    padding: 8px; /* REDUCED: Less padding for more video space */
+    overflow: hidden !important;
+}
+
+.mx-videoannotator.video-maximized .video-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    background-color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    overflow: hidden !important;
+}
+
+.mx-videoannotator.video-maximized .video-container-inner {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden !important;
+}
+
+.mx-videoannotator.video-maximized .main-video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important; /* MAINTAINED: Keep contain for accurate positioning */
+    object-position: center !important;
+    border-radius: 4px;
+    background-color: #000; /* MAINTAINED: Black background for letterboxing */
+}
+
+.mx-videoannotator.video-maximized .audio-player-container {
+    min-height: 100% !important;
+    height: 100% !important;
+    border-radius: 0;
+    background: white; /* CHANGED: White background in maximized mode */
+}
+
+.mx-videoannotator.video-maximized .audio-visualization {
+    max-width: 80%;
+    padding: 60px;
+}
+
+.mx-videoannotator.video-maximized .audio-icon {
+    font-size: 180px !important;
+}
+
+.mx-videoannotator.video-maximized .audio-title {
+    font-size: 48px !important;
+}
+
+.mx-videoannotator.video-maximized .audio-description {
+    font-size: 20px !important;
+    max-width: 600px;
+}
+
+.mx-videoannotator.video-maximized .annotations-sidebar {
+    flex: 0 0 350px;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 0;
+    overflow-y: auto;
+}
+
+/* FIXED: Maximized mode modal z-index - moderate values like PDF Annotator */
+.mx-videoannotator.video-maximized .annotation-form-overlay {
+    z-index: 60000 !important; /* FIXED: Same as PDF Annotator maximized mode */
+}
+
+.mx-videoannotator.video-maximized .file-preview-overlay {
+    z-index: 60000 !important; /* FIXED: Same as PDF Annotator maximized mode */
+}
+
+.mx-videoannotator.video-maximized .annotation-dropdown-menu,
+.mx-videoannotator.video-maximized .reference-dropdown-menu {
+    z-index: 2000 !important; /* FIXED: Higher for maximized dropdowns */
+}
+
+/* Loading state adjustments for maximized mode */
+.mx-videoannotator.video-maximized .video-loading-container {
+    min-height: calc(100vh - 200px) !important;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white; /* CHANGED: White background */
+}
+
+/* Error and Empty States */
+.mx-videoannotator.mx-videoannotator-error {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mx-videoannotator .error-content {
+    padding: 40px;
+    text-align: center;
+    color: #dc3545;
+}
+
+.mx-videoannotator .error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.mx-videoannotator .error-message {
+    margin: 0;
+    font-size: 16px;
+}
+
+.mx-videoannotator .retry-button {
+    margin-top: 16px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.mx-videoannotator .retry-button:hover {
+    background-color: #0056b3;
+}
+
+/* Smooth transitions for maximize/minimize */
+.mx-videoannotator {
+    transition: all 0.3s ease-in-out;
+}
+
+.mx-videoannotator .video-wrapper,
+.mx-videoannotator .video-container,
+.mx-videoannotator .video-area,
+.mx-videoannotator .main-video {
+    transition: all 0.3s ease-in-out;
+}
+
+.mx-videoannotator.video-maximized {
+    transition: all 0.3s ease-in-out;
+}
+
+.mx-videoannotator.video-maximized .video-wrapper,
+.mx-videoannotator.video-maximized .video-container,
+.mx-videoannotator.video-maximized .video-area,
+.mx-videoannotator.video-maximized .main-video {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Focus outline for accessibility */
+.mx-videoannotator .video-maximize-minimize-btn:focus {
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+}
+
+/* Enhanced Video Timestamp Comments - Clean Design */
+.mx-videoannotator .video-timestamp-comment {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    max-width: 280px;
+    min-width: 200px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 25;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: slideInFromRight 0.4s ease-out;
+}
+
+.mx-videoannotator .video-timestamp-comment:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+}
+
+.mx-videoannotator .video-timestamp-comment.active {
+    border-color: #3B82F6;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.25);
+    transform: translateY(-1px);
+}
+
+.mx-videoannotator .video-timestamp-comment .comment-badge {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.mx-videoannotator .video-timestamp-comment .comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.mx-videoannotator .video-timestamp-comment .comment-text {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 4px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.mx-videoannotator .video-timestamp-comment .comment-time {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mx-videoannotator .video-timestamp-comment .comment-time::before {
+    content: '⏱';
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+/* Animation for timestamp comment appearance */
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100%) translateY(-50%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+/* Dark theme support for timestamp comments */
+@media (prefers-color-scheme: dark) {
+    .mx-videoannotator .video-timestamp-comment {
+        background: linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+        border-color: rgba(75, 85, 99, 0.3);
+    }
+    
+    .mx-videoannotator .video-timestamp-comment:hover {
+        background: linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+    }
+    
+    .mx-videoannotator .video-timestamp-comment .comment-text {
+        color: #f9fafb;
+    }
+    
+    .mx-videoannotator .video-timestamp-comment .comment-time {
+        color: #9ca3af;
+    }
+}
+
+/* Responsive design with better video handling */
+@media (max-width: 768px) {
+    .mx-videoannotator .main-content {
+        flex-direction: column;
+        height: 100vh !important; /* CHANGED: Full height */
+        max-height: 100vh !important;
+    }
+    
+    .mx-videoannotator .video-area {
+        flex: 1;
+        min-height: 0;
+        max-height: 60vh;
+        padding: 12px;
+    }
+    
+    .mx-videoannotator .video-container {
+        height: 100%;
+        max-height: 100%;
+        padding: 12px;
+    }
+    
+    .mx-videoannotator .video-wrapper {
+        height: 100%;
+        max-height: 100%;
+        min-height: 250px;
+    }
+    
+    .mx-videoannotator .annotations-sidebar {
+        flex: 1;
+        width: 100% !important;
+        max-height: 40vh;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        overflow-y: auto;
+    }
+    
+    .mx-videoannotator .annotation-form-modal,
+    .mx-videoannotator .file-preview-modal {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+        max-height: calc(100vh - 40px);
+    }
+    
+    .mx-videoannotator .annotation-form-body {
+        padding: 20px;
+        max-height: calc(80vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .mx-videoannotator .annotation-form-footer {
+        padding: 16px 20px;
+    }
+    
+    .mx-videoannotator .file-preview-modal {
+        width: 95%;
+        max-width: none;
+        margin: 10px;
+        max-height: calc(100vh - 40px);
+    }
+    
+    .mx-videoannotator .file-preview-content {
+        padding: 16px;
+        max-height: calc(70vh - 120px);
+        overflow: auto;
+    }
+    
+    .mx-videoannotator .file-preview-pdf {
+        height: 400px;
+    }
+    
+    .mx-videoannotator .file-preview-header {
+        padding: 16px;
+    }
+    
+    .mx-videoannotator .file-preview-title {
+        font-size: 16px;
+    }
+    
+    .mx-videoannotator .loading-spinner {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .mx-videoannotator .loading-text {
+        font-size: 16px !important;
+    }
+    
+    .mx-videoannotator .reference-search-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Mobile audio player adjustments */
+    .mx-videoannotator .audio-icon {
+        font-size: 80px !important;
+    }
+    
+    .mx-videoannotator .audio-title {
+        font-size: 24px !important;
+    }
+    
+    .mx-videoannotator .audio-description {
+        font-size: 14px !important;
+    }
+    
+    /* Responsive adjustments for maximized mode */
+    .mx-videoannotator.video-maximized .video-header-bar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .mx-videoannotator.video-maximized .header-left,
+    .mx-videoannotator.video-maximized .header-right {
+        gap: 8px;
+    }
+    
+    .mx-videoannotator.video-maximized .video-button {
+        padding: 6px 12px;
+        font-size: 12px;
+        min-height: 32px;
+    }
+    
+    .mx-videoannotator.video-maximized .main-content {
+        height: 100vh !important; /* CHANGED: Full height */
+        flex-direction: column;
+    }
+    
+    .mx-videoannotator.video-maximized .video-area {
+        height: 60% !important;
+        width: 100% !important;
+        padding: 8px !important;
+        min-height: 0 !important;
+    }
+    
+    .mx-videoannotator.video-maximized .video-container {
+        padding: 8px !important;
+    }
+    
+    .mx-videoannotator.video-maximized .annotations-sidebar {
+        height: 40% !important;
+        width: 100% !important;
+        border-top: 1px solid #e5e7eb;
+        border-left: none;
+    }
+    
+    /* Mobile audio maximized adjustments */
+    .mx-videoannotator.video-maximized .audio-visualization {
+        padding: 40px;
+        max-width: 90%;
+    }
+    
+    .mx-videoannotator.video-maximized .audio-icon {
+        font-size: 120px !important;
+    }
+    
+    .mx-videoannotator.video-maximized .audio-title {
+        font-size: 32px !important;
+    }
+    
+    .mx-videoannotator.video-maximized .audio-description {
+        font-size: 16px !important;
+    }
+    
+    /* Mobile timestamp comments */
+    .mx-videoannotator .video-timestamp-comment {
+        top: 12px;
+        right: 12px;
+        max-width: 240px;
+        min-width: 180px;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    
+    .mx-videoannotator .video-timestamp-comment .comment-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+    
+    .mx-videoannotator .video-timestamp-comment .comment-text {
+        font-size: 13px;
+    }
+    
+    .mx-videoannotator .video-timestamp-comment .comment-time {
+        font-size: 11px;
+    }
+}
+
+/* Scrollbar styling */
+.mx-videoannotator .annotations-list::-webkit-scrollbar,
+.mx-videoannotator .reference-dropdown-menu::-webkit-scrollbar,
+.mx-videoannotator .annotation-form-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mx-videoannotator .annotations-list::-webkit-scrollbar-track,
+.mx-videoannotator .reference-dropdown-menu::-webkit-scrollbar-track,
+.mx-videoannotator .annotation-form-body::-webkit-scrollbar-track {
+    background: var(--background-light);
+    border-radius: 3px;
+}
+
+.mx-videoannotator .annotations-list::-webkit-scrollbar-thumb,
+.mx-videoannotator .reference-dropdown-menu::-webkit-scrollbar-thumb,
+.mx-videoannotator .annotation-form-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.mx-videoannotator .annotations-list::-webkit-scrollbar-thumb:hover,
+.mx-videoannotator .reference-dropdown-menu::-webkit-scrollbar-thumb:hover,
+.mx-videoannotator .annotation-form-body::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Focus styles for accessibility */
+.mx-videoannotator button:focus,
+.mx-videoannotator input:focus,
+.mx-videoannotator textarea:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Enhanced widget isolation for multiple instances */
+.mx-videoannotator[data-widget-id] {
+    isolation: isolate;
+}
+
+.mx-videoannotator[data-widget-id] * {
+    box-sizing: border-box;
+}

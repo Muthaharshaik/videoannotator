@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="lowcode-labs.videoannotator.Videoannotator" pluginWidget="true" needsEntityContext="true" offlineCapable="true"
+        supportedPlatform="Web"
+        xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    <name>Video Annotator</name>
+    <description>Video annotator widget with AWS S3 integration and annotation management</description>
+    <icon/>
+    <properties>
+        <propertyGroup caption="AWS Configuration">
+            <property key="awsAccessKey" type="attribute" required="true">
+                <caption>AWS Access Key</caption>
+                <description>AWS access key for S3 access</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="awsSecretKey" type="attribute" required="true">
+                <caption>AWS Secret Key</caption>
+                <description>AWS secret key for S3 access</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="awsRegion" type="attribute" required="true">
+                <caption>AWS Region</caption>
+                <description>AWS region where S3 bucket is located</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="s3BucketName" type="attribute" required="true">
+                <caption>S3 Bucket Name</caption>
+                <description>Name of the S3 bucket containing the video</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="s3FileName" type="attribute" required="true">
+                <caption>S3 File Name</caption>
+                <description>Name/path of the video file in S3 bucket</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+        </propertyGroup>
+        
+        <propertyGroup caption="User Configuration">
+            <property key="userName" type="attribute" required="true">
+                <caption>User Name</caption>
+                <description>Name of the user creating annotations</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+        </propertyGroup>
+        
+        <propertyGroup caption="Annotations">
+            <property key="videoAnnotations" type="attribute" required="true">
+                <caption>Video Annotations</caption>
+                <description>JSON string containing video annotations data</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="onAnnotationAdd" type="action">
+                <caption>On Annotation Add</caption>
+                <description>Action triggered when a new annotation is added</description>
+            </property>
+            <property key="onAnnotationDelete" type="action">
+                <caption>On Annotation Delete</caption>
+                <description>Action triggered when an annotation is deleted</description>
+            </property>
+        </propertyGroup>
+        
+        <propertyGroup caption="Reference Documents">
+            <property key="referenceDocuments" type="attribute" required="false">
+                <caption>Reference Documents List</caption>
+                <description>JSON string containing list of reference documents for dropdown selection. Format: [{"FileID": 69636, "Name": "Document Name.pdf", "Link": "http://localhost:8080/p/69636"}]</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+        </propertyGroup>
+        
+        <propertyGroup caption="Widget Control">
+            <property key="allowAnnotations" type="attribute" required="false">
+                <caption>Allow Annotations</caption>
+                <description>Boolean to control if users can add/edit annotations (true = allow, false = read-only)</description>
+                <attributeTypes>
+                    <attributeType name="Boolean"/>
+                </attributeTypes>
+            </property>
+            <property key="annotationMode" type="attribute" required="false">
+                <caption>Annotation Mode</caption>
+                <description>String to control annotation functionality: "ENABLED", "DISABLED", or "READ_ONLY"</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+        </propertyGroup>
+        
+        <propertyGroup caption="General">
+            <systemProperty key="Name"/>
+            <systemProperty key="Visibility"/>
+            <systemProperty key="Editability"/>
+        </propertyGroup>
+        
+        <propertyGroup caption="Common">
+            <systemProperty key="TabIndex"/>
+        </propertyGroup>
+    </properties>
+</widget>
