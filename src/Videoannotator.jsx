@@ -15,6 +15,7 @@ export default function Videoannotator({
     awsAccessKey,
     awsSecretKey, 
     awsRegion,
+    awsSessionToken,
     s3BucketName,
     s3FileName,
     userName,
@@ -550,7 +551,7 @@ export default function Videoannotator({
     }, [currentUser]);
 
     // Enhanced AWS Signature V4 implementation
-    const generateSignedUrl = useCallback(async (bucket, key, region, accessKey, secretKey) => {
+    const generateSignedUrl = useCallback(async (bucket, key, region, accessKey, secretKey, sessionToken) => {
         try {
             console.log(`🔗 [Widget ${widgetInstanceId}] Generating signed URL for:`, { bucket, key: key.substring(0, 50) + '...' });
             
@@ -573,6 +574,7 @@ export default function Videoannotator({
             queryParams.set('X-Amz-Credential', `${accessKey}/${credentialScope}`);
             queryParams.set('X-Amz-Date', amzDate);
             queryParams.set('X-Amz-Expires', '3600');
+            queryParams.set("X-Amz-Security-Token", sessionToken);
             queryParams.set('X-Amz-SignedHeaders', 'host');
             
             const canonicalQuerystring = queryParams.toString();
@@ -618,13 +620,14 @@ export default function Videoannotator({
     // Enhanced media URL generation
     const generateMediaUrl = useCallback(async () => {
         if (!s3BucketName?.value || !s3FileName?.value || !awsAccessKey?.value || 
-            !awsSecretKey?.value || !awsRegion?.value) {
+            !awsSecretKey?.value || !awsRegion?.value || !awsSessionToken?.value) {
             const missingParams = [];
             if (!s3BucketName?.value) missingParams.push('bucket');
             if (!s3FileName?.value) missingParams.push('fileName');
             if (!awsAccessKey?.value) missingParams.push('accessKey');
             if (!awsSecretKey?.value) missingParams.push('secretKey');
             if (!awsRegion?.value) missingParams.push('region');
+            if (!awsSessionToken?.value) missingParams.push('sessionToken');
             
             const errorMsg = `Missing required AWS configuration: ${missingParams.join(', ')}`;
             console.error(`❌ [Widget ${widgetInstanceId}] ${errorMsg}`);
@@ -650,7 +653,8 @@ export default function Videoannotator({
                 fileName,
                 awsRegion.value,
                 awsAccessKey.value,
-                awsSecretKey.value
+                awsSecretKey.value,
+                awsSessionToken.value
             );
             
             // Test the URL before setting it
@@ -682,15 +686,15 @@ export default function Videoannotator({
             setMediaError(`Failed to generate media URL: ${error.message}`);
             setLoadingMedia(false);
         }
-    }, [s3BucketName, s3FileName, awsAccessKey, awsSecretKey, awsRegion, generateSignedUrl, detectFileType, widgetInstanceId]);
+    }, [s3BucketName, s3FileName, awsAccessKey, awsSecretKey, awsSessionToken, awsRegion, generateSignedUrl, detectFileType, widgetInstanceId]);
 
     // Load media URL when credentials change
     useEffect(() => {
         if (awsAccessKey?.value && awsSecretKey?.value && awsRegion?.value && 
-            s3BucketName?.value && s3FileName?.value) {
+            s3BucketName?.value && s3FileName?.value && awsSessionToken?.value) {
             generateMediaUrl();
         }
-    }, [awsAccessKey, awsSecretKey, awsRegion, s3BucketName, s3FileName, generateMediaUrl]);
+    }, [awsAccessKey, awsSecretKey, awsRegion, awsSessionToken, s3BucketName, s3FileName, generateMediaUrl]);
 
     // Close dropdown when clicking outside
     useEffect(() => {

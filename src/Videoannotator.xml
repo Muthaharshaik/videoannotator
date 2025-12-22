@@ -29,6 +29,13 @@
                     <attributeType name="String"/>
                 </attributeTypes>
             </property>
+            <property key="awsSessionToken" type="attribute" required="true">
+                <caption>AWS Session Token</caption>
+                <description>Temporary AWS Session Token</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
             <property key="s3BucketName" type="attribute" required="true">
                 <caption>S3 Bucket Name</caption>
                 <description>Name of the S3 bucket containing the video</description>
