@@ -63,6 +63,17 @@
                     <attributeType name="String"/>
                 </attributeTypes>
             </property>
+            <property key="userRole" type="expression" required="false">
+                <caption>User Role</caption>
+                <description>Role of the current user</description>
+                <returnType type="String"/>
+            </property>
+
+            <property key="authorID" type="expression" required="false">
+                <caption>Author ID</caption>
+                <description>ID of the Author</description>
+                <returnType type="String"/>
+            </property>
             <property key="onAnnotationAdd" type="action">
                 <caption>On Annotation Add</caption>
                 <description>Action triggered when a new annotation is added</description>

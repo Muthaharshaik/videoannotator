@@ -24,6 +24,8 @@ export default function Videoannotator({
     allowAnnotations,
     annotationMode,
     referenceDocuments,
+    userRole,
+    authorID,
     name, 
     tabIndex, 
     style,
@@ -122,6 +124,11 @@ export default function Videoannotator({
     
     // User info
     const currentUser = userName?.value || userName || "User";
+    const currentUserRole = (userRole && userRole.value !== undefined) ? (userRole.value || '') :
+                            (typeof userRole === 'string' ? userRole : '');
+
+    const currentAuthorId = (authorID && authorID.value !== undefined) ? (authorID.value || '') :
+                            (typeof authorID === 'string' ? authorID : '');
     
     const MAX_COMMENT_LENGTH = 100;
     const ANNOTATION_COLOR = '#3B82F6';
@@ -1342,6 +1349,8 @@ export default function Videoannotator({
                 } : null,
                 color: ANNOTATION_COLOR,
                 user: currentUser,
+                role: currentUserRole,
+                authorId: currentAuthorId,
                 createdAt: new Date().toISOString(),
                 widgetInstanceId: widgetInstanceId,
                 positioningVersion: 'v6-enhanced-container-aware' // UPDATED: Version tracking
@@ -3095,6 +3104,17 @@ export default function Videoannotator({
                                         key: 'annotation-type',
                                         className: 'annotation-type'
                                     }, annotation.position ? '📍' : '▶'),
+                                    annotation.role && createElement('span', {
+                                        key: 'role-badge',
+                                        style:{
+                                                backgroundColor:'#eff6ff',
+                                                color:'#1d4ed8',
+                                                padding: '2px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '11px',
+                                                fontWeight: '600'
+                                        }
+                                    }, annotation.role),
                                     createElement('span', {
                                         key: 'timestamp',
                                         className: 'timestamp'
@@ -3213,6 +3233,17 @@ export default function Videoannotator({
                                         fontWeight: canEditAnnotation(annotation) ? '600' : '400'
                                     }
                                 }, `${annotation.user}${canEditAnnotation(annotation) ? ' (You)' : ''}`),
+                                annotation.role && createElement('span', {
+                                        key: 'role-footer',
+                                        style: {
+                                            fontSize: '11px',
+                                            color: '#1D4ED8',
+                                            fontWeight: '500',
+                                            backgroundColor: '#EFF6FF',
+                                            padding: '1px 6px',
+                                            borderRadius: '4px'
+                                        }
+                                    }, annotation.role),
                                 createElement('span', {
                                     key: 'date',
                                     className: 'date'
