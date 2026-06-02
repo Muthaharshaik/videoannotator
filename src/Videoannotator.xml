@@ -68,7 +68,6 @@
                 <description>Role of the current user</description>
                 <returnType type="String"/>
             </property>
-
             <property key="authorID" type="expression" required="false">
                 <caption>Author ID</caption>
                 <description>ID of the Author</description>
@@ -115,6 +114,17 @@
                 <attributeTypes>
                     <attributeType name="String"/>
                 </attributeTypes>
+            </property>
+            <property key="widgetLogs" type="attribute" required="false">
+                <caption>Widget Logs</caption>
+                <description>JSON string where the widget writes structured log entries.</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="onLogEvent" type="action" required="false">
+                <caption>On Log Event</caption>
+                <description>Action triggered each time the widget writes a log entry</description>
             </property>
         </propertyGroup>
         

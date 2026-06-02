@@ -27,6 +27,8 @@ export default function Videoannotator({
     referenceDocuments,
     userRole,
     authorID,
+    widgetLogs,
+    onLogEvent,
     name, 
     tabIndex, 
     style,
@@ -57,6 +59,7 @@ export default function Videoannotator({
     const videoContainerRef = useRef(null);
     const videoOverlaysRef = useRef(null); // NEW: Ref for video overlays container
     const replyInputRef = useRef(null);
+    const logEventRef = useRef(null); // NEW: Ref for log event handling
     
     // Core media state
     const [isPlaying, setIsPlaying] = useState(false);
@@ -148,69 +151,117 @@ export default function Videoannotator({
 
     // ENHANCED: Execute Mendix microflow with proper error handling (from Image Annotator)
     const executeMendixAction = useCallback((action, actionName) => {
-        if (!action) {
-            addDebugLog(`⚠️ ${actionName} action not configured`);
-            return false;
-        }
+            if (!action) {
+                addDebugLog(`⚠️ ${actionName} action not configured`);
+                return false;
+            }
 
-        addDebugLog(`📞 Executing ${actionName} microflow...`);
-        
+            addDebugLog(`📞 Executing ${actionName} microflow...`);
+            
+            try {
+                if (action && typeof action.execute === 'function') {
+                    addDebugLog(`🎯 Calling ${actionName} via execute() method`);
+                    action.execute();
+                    addDebugLog(`✅ ${actionName} microflow executed successfully via execute()`);
+                    if (actionName !== 'onLogEvent') {
+                        logEventRef.current?.('SUCCESS', `Microflow executed: ${actionName}`);
+                    }
+                    return true;
+                }
+                else if (typeof action === 'function') {
+                    addDebugLog(`🎯 Calling ${actionName} as direct function`);
+                    action();
+                    addDebugLog(`✅ ${actionName} microflow executed successfully as function`);
+                    if (actionName !== 'onLogEvent') {
+                        logEventRef.current?.('SUCCESS', `Microflow executed: ${actionName}`);
+                    }
+                    return true;
+                }
+                else if (action && typeof action === 'object') {
+                    addDebugLog(`🔍 ${actionName} is object, checking for callable methods`);
+                    if (typeof action.call === 'function') {
+                        addDebugLog(`🎯 Calling ${actionName} via call() method`);
+                        action.call();
+                        addDebugLog(`✅ ${actionName} microflow executed successfully via call()`);
+                        if (actionName !== 'onLogEvent') {
+                            logEventRef.current?.('SUCCESS', `Microflow executed: ${actionName}`);
+                        }
+                        return true;
+                    }
+                    if (typeof action.invoke === 'function') {
+                        addDebugLog(`🎯 Calling ${actionName} via invoke() method`);
+                        action.invoke();
+                        addDebugLog(`✅ ${actionName} microflow executed successfully via invoke()`);
+                        if (actionName !== 'onLogEvent') {
+                            logEventRef.current?.('SUCCESS', `Microflow executed: ${actionName}`);
+                        }
+                        return true;
+                    }
+                    const availableMethods = Object.getOwnPropertyNames(action).filter(prop => typeof action[prop] === 'function');
+                    addDebugLog(`🔍 Available methods on ${actionName}: ${availableMethods.join(', ')}`);
+                }
+                addDebugLog(`❌ ${actionName} action exists but no valid execution method found`);
+                addDebugLog(`🔍 ${actionName} type: ${typeof action}, constructor: ${action?.constructor?.name}`);
+                if (actionName !== 'onLogEvent') {
+                    logEventRef.current?.('ERROR', `Microflow not executable: ${actionName}`,
+                        `type: ${typeof action} | constructor: ${action?.constructor?.name}`);
+                }
+                return false;
+            } catch (error) {
+                addDebugLog(`❌ Error executing ${actionName} microflow: ${error.message}`);
+                if (actionName !== 'onLogEvent') {
+                    logEventRef.current?.('ERROR', `Microflow threw exception: ${actionName}`, error.message);
+                }
+                console.error(`[Widget ${widgetInstanceId}] ${actionName} execution error:`, error);
+                return false;
+            }
+        }, [addDebugLog, widgetInstanceId]);
+
+        // ── Structured log shipping to Mendix ──────────────────────────────────────
+    const logEvent = useCallback((level, message, detail = '') => {
+        const consoleMethod = level === 'ERROR' ? 'error' : level === 'WARNING' ? 'warn' : 'log';
+        console[consoleMethod](`[Widget ${widgetInstanceId}] [${level}] ${message}`, detail || '');
+
+        if (!widgetLogs) return;
+
         try {
-            // Method 1: Check if action has execute method (common pattern)
-            if (action && typeof action.execute === 'function') {
-                addDebugLog(`🎯 Calling ${actionName} via execute() method`);
-                action.execute();
-                addDebugLog(`✅ ${actionName} microflow executed successfully via execute()`);
-                return true;
-            }
-            
-            // Method 2: Direct function call
-            else if (typeof action === 'function') {
-                addDebugLog(`🎯 Calling ${actionName} as direct function`);
-                action();
-                addDebugLog(`✅ ${actionName} microflow executed successfully as function`);
-                return true;
-            }
-            
-            // Method 3: Check if action is an object with other callable methods
-            else if (action && typeof action === 'object') {
-                addDebugLog(`🔍 ${actionName} is object, checking for callable methods`);
-                
-                // Try common Mendix action patterns
-                if (typeof action.call === 'function') {
-                    addDebugLog(`🎯 Calling ${actionName} via call() method`);
-                    action.call();
-                    addDebugLog(`✅ ${actionName} microflow executed successfully via call()`);
-                    return true;
+            const entry = {
+                widgetInstanceId, level, message,
+                detail: detail ? String(detail) : undefined,
+                timestamp: new Date().toISOString()
+            };
+            let existing = [];
+            try {
+                const raw = widgetLogs.value;
+                if (raw && raw.trim() !== '' && raw !== '[]') {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) existing = parsed;
                 }
-                
-                if (typeof action.invoke === 'function') {
-                    addDebugLog(`🎯 Calling ${actionName} via invoke() method`);
-                    action.invoke();
-                    addDebugLog(`✅ ${actionName} microflow executed successfully via invoke()`);
-                    return true;
-                }
-                
-                // Log available methods for debugging
-                const availableMethods = Object.getOwnPropertyNames(action).filter(prop => typeof action[prop] === 'function');
-                addDebugLog(`🔍 Available methods on ${actionName}: ${availableMethods.join(', ')}`);
+            } catch (_) { existing = []; }
+            const updated = [...existing, entry].slice(-200);
+            const jsonString = JSON.stringify(updated);
+            if (typeof widgetLogs.setValue === 'function') {
+                widgetLogs.setValue(jsonString);
+            } else if (widgetLogs.value !== undefined) {
+                widgetLogs.value = jsonString;
             }
-            
-            addDebugLog(`❌ ${actionName} action exists but no valid execution method found`);
-            addDebugLog(`🔍 ${actionName} type: ${typeof action}, constructor: ${action?.constructor?.name}`);
-            
-            return false;
-            
-        } catch (error) {
-            addDebugLog(`❌ Error executing ${actionName} microflow: ${error.message}`);
-            console.error(`[Widget ${widgetInstanceId}] ${actionName} execution error:`, error);
-            return false;
+            if (onLogEvent && typeof onLogEvent.execute === 'function') {
+                onLogEvent.execute();
+            } else if (typeof onLogEvent === 'function') {
+                onLogEvent();
+            }
+        } catch (err) {
+            console.error(`[Widget ${widgetInstanceId}] logEvent write failed:`, err);
         }
-    }, [addDebugLog, widgetInstanceId]);
+    }, [widgetInstanceId, widgetLogs, onLogEvent]);
+
+    // ── Keep ref in sync ──────────────────────────────────────────────────────
+    logEventRef.current = logEvent;
 
     // ENHANCED: Widget mount/unmount logging with microflow configuration check
     useEffect(() => {
         console.log(`🚀 [Widget ${widgetInstanceId}] VideoAnnotator initialized`);
+        logEvent('INFO', 'Widget initialized', `Instance: ${widgetInstanceId}`);
         addDebugLog("=== MICROFLOW CONFIGURATION CHECK ===");
         addDebugLog(`onAnnotationAdd configured: ${!!onAnnotationAdd}`);
         addDebugLog(`onAnnotationDelete configured: ${!!onAnnotationDelete}`);
@@ -234,7 +285,7 @@ export default function Videoannotator({
                 console.log(`🧹 [Widget ${widgetInstanceId}] Cleaning up file input ref`);
             }
         };
-    }, [widgetInstanceId, onAnnotationAdd, onAnnotationDelete, addDebugLog]);
+    }, [widgetInstanceId, onAnnotationAdd, onAnnotationDelete, addDebugLog, logEvent]);
 
     useEffect(() => {
     if (showCommentModal && richTextRef.current) {
@@ -371,12 +422,14 @@ export default function Videoannotator({
                     calculateVideoRenderingArea();
                 }, 100); // Small delay to ensure video is rendered
                 
-                console.log(`🎬 [Widget ${widgetInstanceId}] Video loaded successfully`);
+                logEvent('SUCCESS', 'Video loaded successfully',
+                `duration: ${mediaElement.duration.toFixed(1)}s | file: ${s3FileName?.value}`)
             } else {
-                console.log(`🎵 [Widget ${widgetInstanceId}] Audio loaded successfully - Duration: ${mediaElement.duration}s`);
+                logEvent('SUCCESS', 'Audio loaded successfully',
+                `duration: ${mediaElement.duration.toFixed(1)}s | file: ${s3FileName?.value}`)
             }
         }
-    }, [isAudioFile, widgetInstanceId, calculateVideoRenderingArea]);
+    }, [isAudioFile, widgetInstanceId, calculateVideoRenderingArea, logEvent, s3FileName]);
 
     // ENHANCED: More frequent recalculation triggers for position accuracy
     useEffect(() => {
@@ -661,12 +714,15 @@ export default function Videoannotator({
             if (!awsRegion?.value) missingParams.push('region');
             
             const errorMsg = `Missing required AWS configuration: ${missingParams.join(', ')}`;
+            logEvent('ERROR', 'Media URL generation failed — missing config', errorMsg);
             console.error(`❌ [Widget ${widgetInstanceId}] ${errorMsg}`);
             setMediaError(errorMsg);
             setLoadingMedia(false);
             return;
         }
 
+        logEvent('INFO', 'Generating signed S3 URL',`bucket: ${s3BucketName.value} | file: ${s3FileName.value} | region: ${awsRegion.value}`);
+            
         const fileName = s3FileName.value;
         const isAudio = detectFileType(fileName);
         
@@ -691,11 +747,13 @@ export default function Videoannotator({
             const testElement = document.createElement(isAudio ? 'audio' : 'video');
             testElement.onloadedmetadata = () => {
                 console.log(`✅ [Widget ${widgetInstanceId}] ${isAudio ? 'Audio' : 'Video'} metadata loaded successfully`);
+                logEvent('SUCCESS', `${isAudio ? 'Audio' : 'Video'} metadata loaded`, `file: ${fileName}`);
                 setMediaUrl(signedUrl);
                 setLoadingMedia(false);
             };
             testElement.onerror = (error) => {
                 console.error(`❌ [Widget ${widgetInstanceId}] ${isAudio ? 'Audio' : 'Video'} failed to load:`, error);
+                logEvent('ERROR', `${isAudio ? 'Audio' : 'Video'} failed to load`, `file: ${fileName} | error: ${error.message}`);
                 setMediaError(`Failed to load ${isAudio ? 'audio' : 'video'}: Please check the file path and AWS configuration`);
                 setLoadingMedia(false);
             };
@@ -703,6 +761,7 @@ export default function Videoannotator({
             setTimeout(() => {
                 if (testElement.readyState === 0) {
                     console.warn(`⏰ [Widget ${widgetInstanceId}] ${isAudio ? 'Audio' : 'Video'} load timeout - displaying anyway`);
+                    logEvent('WARNING', `${isAudio ? 'Audio' : 'Video'} load timeout - Forcing URL Render`, `file: ${fileName}`);
                     setMediaUrl(signedUrl);
                     setLoadingMedia(false);
                 }
@@ -713,10 +772,11 @@ export default function Videoannotator({
             
         } catch (error) {
             console.error(`❌ [Widget ${widgetInstanceId}] Error generating media URL:`, error);
+            logEvent('ERROR', 'Media URL generation failed', `file: ${s3FileName.value} | error: ${error.message}`);
             setMediaError(`Failed to generate media URL: ${error.message}`);
             setLoadingMedia(false);
         }
-    }, [s3BucketName, s3FileName, awsAccessKey, awsSecretKey, awsRegion, generateSignedUrl, detectFileType, widgetInstanceId]);
+    }, [s3BucketName, s3FileName, awsAccessKey, awsSecretKey, awsRegion, generateSignedUrl, detectFileType, widgetInstanceId, logEvent]);
 
     // Load media URL when credentials change
     useEffect(() => {
@@ -1252,6 +1312,7 @@ export default function Videoannotator({
                 addDebugLog("📝 Attempting direct attribute update...");
                 try {
                     videoAnnotations.setValue(jsonString);
+                    logEvent('SUCCESS', 'Annotations saved to Mendix attribute', `count: ${annotationsArray.length}`);
                     saveSuccess = true;
                     addDebugLog("✅ Direct attribute update successful");
                 } catch (error) {
@@ -1261,6 +1322,7 @@ export default function Videoannotator({
                 addDebugLog("📝 Attempting direct value assignment...");
                 try {
                     videoAnnotations.value = jsonString;
+                    logEvent('SUCCESS', 'Annotations saved to Mendix attribute', `count: ${annotationsArray.length}`);
                     saveSuccess = true;
                     addDebugLog("✅ Direct value assignment successful");
                 } catch (error) {
@@ -1291,11 +1353,13 @@ export default function Videoannotator({
             
         } catch (error) {
             addDebugLog(`❌ Error saving annotations: ${error.message}`);
+            logEvent('ERROR', 'Failed to save annotations to Mendix', error.message)
             console.error(`[Widget ${widgetInstanceId}] Error saving annotations:`, error);
+
         }
         
         addDebugLog("=== END SAVING VIDEO ANNOTATIONS ===");
-    }, [onAnnotationAdd, videoAnnotations, addDebugLog, executeMendixAction, widgetInstanceId]);
+    }, [onAnnotationAdd, videoAnnotations, addDebugLog, executeMendixAction, widgetInstanceId,logEvent]);
 
     const saveAnnotations = useCallback((newAnnotations) => {
         setAnnotations(newAnnotations);
@@ -1470,7 +1534,7 @@ export default function Videoannotator({
             addDebugLog(`Deleting annotation ID: ${annotationId}`);
             
             const updated = annotations.filter(ann => ann.id !== annotationId);
-            
+            logEvent('INFO', 'Annotation deleted', `id: ${annotationId} | remaining: ${updated.length}`);
             // First update the UI
             setAnnotations(updated);
             
@@ -1519,7 +1583,7 @@ export default function Videoannotator({
             
             console.log(`✅ [Widget ${widgetInstanceId}] Annotation deleted successfully`);
         }
-    }, [annotations, videoAnnotations, onAnnotationDelete, activeAnnotationId, canAddAnnotations, canEditAnnotation, addDebugLog, executeMendixAction, widgetInstanceId]);
+    }, [annotations, videoAnnotations, onAnnotationDelete, activeAnnotationId, canAddAnnotations, canEditAnnotation, addDebugLog, executeMendixAction, widgetInstanceId, logEvent]);
 
     const formatTime = useCallback((seconds) => {
         if (!seconds || isNaN(seconds)) return '0:00';
