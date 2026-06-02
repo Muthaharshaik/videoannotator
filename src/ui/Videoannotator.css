@@ -2024,7 +2024,77 @@ UPDATED: Fixed video positioning logic with object-fit: contain for accurate ann
         color: #9ca3af;
     }
 }
-
+/* ── Inline reply thread ─────────────────────────────────────── */
+.mx-videoannotator .annotation-reply-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+.mx-videoannotator .annotation-reply-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background-color: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+.mx-videoannotator .annotation-reply-btn:hover,
+.mx-videoannotator .annotation-reply-btn--active {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+.mx-videoannotator .annotation-reply-btn-icon { font-size: 13px; }
+.mx-videoannotator .annotation-reply-chevron { font-size: 10px; opacity: 0.6; }
+.mx-videoannotator .inline-thread {
+    margin-top: 10px;
+    border-left: 2px solid #e2e8f0;
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.mx-videoannotator .inline-thread-replies { display: flex; flex-direction: column; gap: 2px; }
+.mx-videoannotator .inline-thread-composer { margin-top: 4px; }
+.mx-videoannotator .inline-thread .thread-reply-bubble { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:8px 12px; }
+.mx-videoannotator .inline-thread .thread-reply-text { font-size:12px; margin:0; color:#374151; word-break:break-word; }
+.mx-videoannotator .inline-thread .thread-reply-user { font-size:12px; font-weight:600; color:#374151; }
+.mx-videoannotator .inline-thread .thread-reply-user--self { color:#10b981; }
+.mx-videoannotator .inline-thread .thread-reply-time { font-size:10px; color:#94a3b8; margin-left:auto; }
+.mx-videoannotator .inline-thread .thread-reply-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:3px; }
+.mx-videoannotator .inline-thread .thread-role-badge { background:#eff6ff; color:#1d4ed8; padding:1px 6px; border-radius:10px; font-size:10px; }
+.mx-videoannotator .inline-thread .thread-reply-context { font-size:11px; color:#64748b; font-style:italic; margin-bottom:3px; background:#f1f5f9; border-radius:6px; padding:1px 6px; display:inline-block; }
+.mx-videoannotator .inline-thread .thread-reply-row { position:relative; }
+.mx-videoannotator .inline-thread .thread-reply-row--nested { margin-left:14px; }
+.mx-videoannotator .inline-thread .thread-connector-line { position:absolute; left:-10px; top:0; bottom:16px; width:2px; background:linear-gradient(to bottom,#e2e8f0,transparent); border-radius:2px; }
+.mx-videoannotator .inline-thread .thread-reply-content { display:flex; gap:8px; padding:6px 2px; }
+.mx-videoannotator .inline-thread .thread-reply-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.mx-videoannotator .inline-thread .thread-reply-avatar { width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#94a3b8,#64748b); color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; text-transform:uppercase; }
+.mx-videoannotator .inline-thread .thread-reply-avatar--self { background:linear-gradient(135deg,#10b981,#059669); }
+.mx-videoannotator .inline-thread .thread-reply-actions { padding-left:2px; }
+.mx-videoannotator .inline-thread .thread-inline-reply-btn { background:none; border:none; color:#94a3b8; font-size:11px; font-weight:500; cursor:pointer; padding:2px 0; transition:color 0.15s; font-family:inherit; }
+.mx-videoannotator .inline-thread .thread-inline-reply-btn:hover { color:#3b82f6; }
+.mx-videoannotator .inline-thread .thread-reply-to-root-btn { background:none; border:1px dashed #cbd5e1; border-radius:6px; color:#64748b; font-size:12px; font-weight:500; cursor:pointer; padding:6px 10px; width:100%; text-align:left; transition:all 0.2s; font-family:inherit; }
+.mx-videoannotator .inline-thread .thread-reply-to-root-btn:hover { border-color:#3b82f6; color:#2563eb; background:#eff6ff; }
+.mx-videoannotator .inline-thread .thread-reply-input-container { display:flex; gap:8px; align-items:flex-start; padding:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; }
+.mx-videoannotator .inline-thread .thread-reply-input-wrap { flex:1; display:flex; flex-direction:column; gap:6px; }
+.mx-videoannotator .inline-thread .thread-reply-textarea { width:100%; padding:7px 10px; border:1px solid #e2e8f0; border-radius:7px; font-size:12px; font-family:inherit; line-height:1.5; color:#374151; background:white; resize:none; outline:none; box-sizing:border-box; }
+.mx-videoannotator .inline-thread .thread-reply-textarea:focus { border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.1); }
+.mx-videoannotator .inline-thread .thread-reply-input-actions { display:flex; align-items:center; justify-content:space-between; }
+.mx-videoannotator .inline-thread .thread-reply-hint { font-size:10px; color:#94a3b8; font-style:italic; }
+.mx-videoannotator .inline-thread .thread-btn { padding:5px 12px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.2s; }
+.mx-videoannotator .inline-thread .thread-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.mx-videoannotator .inline-thread .thread-btn--primary { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; }
+.mx-videoannotator .inline-thread .thread-btn--primary:hover:not(:disabled) { opacity:0.9; }
+.mx-videoannotator .inline-thread .thread-btn--ghost { background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; }
+.mx-videoannotator .inline-thread .thread-btn--ghost:hover { background:#e2e8f0; }
 /* Responsive design with better video handling */
 @media (max-width: 768px) {
     .mx-videoannotator .main-content {

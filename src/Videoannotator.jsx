@@ -23,6 +23,7 @@ export default function Videoannotator({
     onAnnotationDelete,
     allowAnnotations,
     annotationMode,
+    allowReply,
     referenceDocuments,
     userRole,
     authorID,
@@ -55,6 +56,7 @@ export default function Videoannotator({
     const refDocDropdownRef = useRef(null);
     const videoContainerRef = useRef(null);
     const videoOverlaysRef = useRef(null); // NEW: Ref for video overlays container
+    const replyInputRef = useRef(null);
     
     // Core media state
     const [isPlaying, setIsPlaying] = useState(false);
@@ -132,6 +134,12 @@ export default function Videoannotator({
     
     const MAX_COMMENT_LENGTH = 100;
     const ANNOTATION_COLOR = '#3B82F6';
+    const canReply = true;
+
+    const [openThreadId, setOpenThreadId] = useState(null);
+    const [replyingToId, setReplyingToId] = useState(null);
+    const [replyText, setReplyText] = useState('');
+    const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
     // ENHANCED: Debug logging function (from Image Annotator)
     const addDebugLog = useCallback((message) => {
@@ -676,7 +684,7 @@ export default function Videoannotator({
                 fileName,
                 awsRegion.value,
                 awsAccessKey.value,
-                awsSecretKey.value,
+                awsSecretKey.value
             );
             
             // Test the URL before setting it
@@ -1353,7 +1361,8 @@ export default function Videoannotator({
                 authorId: currentAuthorId,
                 createdAt: new Date().toISOString(),
                 widgetInstanceId: widgetInstanceId,
-                positioningVersion: 'v6-enhanced-container-aware' // UPDATED: Version tracking
+                positioningVersion: 'v6-enhanced-container-aware', // UPDATED: Version tracking
+                replies:[]
             };
             
             updatedAnnotations = [...annotations, newAnnotation];
@@ -1590,6 +1599,134 @@ export default function Videoannotator({
             transform: 'translate(-50%, -50%)'
         };
     }, [videoDimensions, widgetInstanceId]);
+
+    // ── REPLY FUNCTIONS ─────────────────────────────────────────────
+
+    const handleToggleThread = useCallback((annotation, e) => {
+        e.stopPropagation();
+        setOpenThreadId(prev => prev === annotation.id ? null : annotation.id);
+        setReplyingToId(null);
+        setReplyText('');
+    }, []);
+
+    const handleSetReplyingTo = useCallback((id) => {
+        setReplyingToId(id);
+        setReplyText('');
+        setTimeout(() => { if (replyInputRef.current) replyInputRef.current.focus(); }, 80);
+    }, []);
+
+    const handleCancelReply = useCallback(() => {
+        setReplyingToId(null);
+        setReplyText('');
+    }, []);
+
+    const handleReplySubmit = useCallback(() => {
+        if (!replyText.trim() || !openThreadId || isSubmittingReply) return;
+        setIsSubmittingReply(true);
+
+        const ann = annotations.find(a => a.id === openThreadId);
+        if (!ann) { setIsSubmittingReply(false); return; }
+
+        const replyToId = replyingToId !== null ? replyingToId : ann.id;
+        const allReplies = ann.replies || [];
+        const replyToUser = replyToId === ann.id
+            ? ann.user
+            : (allReplies.find(r => r.id === replyToId)?.user || '');
+
+        const newReply = {
+            id: `reply-${widgetInstanceId}-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`,
+            parentId: ann.id,
+            annotationUser: ann.user,
+            replyToId,
+            replyToUser,
+            user: currentUser,
+            role: currentUserRole,
+            comment: replyText.trim(),
+            createdAt: new Date().toISOString()
+        };
+
+        const updated = annotations.map(a =>
+            a.id === ann.id ? { ...a, replies: [...(a.replies || []), newReply] } : a
+        );
+
+        saveAnnotations(updated);
+        setReplyText('');
+        setReplyingToId(null);
+        setIsSubmittingReply(false);
+    }, [replyText, openThreadId, replyingToId, annotations, saveAnnotations, currentUser, currentUserRole, widgetInstanceId, isSubmittingReply]);
+
+    const getReplyCount = useCallback((annotation) => (annotation.replies || []).length, []);
+
+    const renderReplyInput = useCallback((targetId) => {
+        if (replyingToId !== targetId) return null;
+        return createElement('div', { key: `reply-input-${targetId}`, className: 'thread-reply-input-container' }, [
+            createElement('div', { key: 'avatar', className: 'thread-reply-avatar thread-reply-avatar--self' },
+                currentUser.charAt(0).toUpperCase()),
+            createElement('div', { key: 'wrap', className: 'thread-reply-input-wrap' }, [
+                createElement('textarea', {
+                    key: 'ta', ref: replyInputRef, className: 'thread-reply-textarea',
+                    placeholder: 'Write a reply…', value: replyText, rows: 2,
+                    onChange: e => setReplyText(e.target.value),
+                    onKeyDown: e => {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleReplySubmit();
+                        if (e.key === 'Escape') handleCancelReply();
+                    }
+                }),
+                createElement('div', { key: 'actions', className: 'thread-reply-input-actions' }, [
+                    createElement('span', { key: 'hint', className: 'thread-reply-hint' }, 'Ctrl+Enter to send'),
+                    createElement('div', { key: 'btns', style: { display: 'flex', gap: '8px' } }, [
+                        createElement('button', { key: 'cancel', className: 'thread-btn thread-btn--ghost', onClick: handleCancelReply }, 'Cancel'),
+                        createElement('button', {
+                            key: 'submit', className: 'thread-btn thread-btn--primary',
+                            onClick: handleReplySubmit, disabled: !replyText.trim() || isSubmittingReply
+                        }, isSubmittingReply ? 'Sending…' : 'Reply')
+                    ])
+                ])
+            ])
+        ]);
+    }, [replyingToId, replyText, currentUser, handleReplySubmit, handleCancelReply, isSubmittingReply]);
+
+    const renderThreadedReplies = useCallback((allReplies, parentReplyToId, depth = 0) => {
+        if (!allReplies || allReplies.length === 0) return null;
+        const children = allReplies.filter(r => r.replyToId === parentReplyToId);
+        if (children.length === 0) return null;
+
+        return children.map(reply =>
+            createElement('div', { key: reply.id, className: `thread-reply-row${depth > 0 ? ' thread-reply-row--nested' : ''}` }, [
+                depth > 0 && createElement('div', { key: 'line', className: 'thread-connector-line' }),
+                createElement('div', { key: 'content', className: 'thread-reply-content' }, [
+                    createElement('div', {
+                        key: 'avatar',
+                        className: `thread-reply-avatar${reply.user === currentUser ? ' thread-reply-avatar--self' : ''}`
+                    }, reply.user.charAt(0).toUpperCase()),
+                    createElement('div', { key: 'body', className: 'thread-reply-body' }, [
+                        createElement('div', { key: 'bubble', className: 'thread-reply-bubble' }, [
+                            reply.replyToId !== reply.parentId && createElement('div', {
+                                key: 'context', className: 'thread-reply-context'
+                            }, `↩ replying to ${reply.replyToUser}`),
+                            createElement('div', { key: 'meta', className: 'thread-reply-meta' }, [
+                                createElement('span', {
+                                    key: 'user',
+                                    className: `thread-reply-user${reply.user === currentUser ? ' thread-reply-user--self' : ''}`
+                                }, `${reply.user}${reply.user === currentUser ? ' (You)' : ''}`),
+                                reply.role && createElement('span', { key: 'role', className: 'thread-role-badge' }, reply.role),
+                                createElement('span', { key: 'time', className: 'thread-reply-time' }, getFormattedTime(reply.createdAt))
+                            ]),
+                            createElement('p', { key: 'text', className: 'thread-reply-text' }, reply.comment)
+                        ]),
+                        canReply && createElement('div', { key: 'actions', className: 'thread-reply-actions' }, [
+                            replyingToId !== reply.id
+                                ? createElement('button', { key: 'rb', className: 'thread-inline-reply-btn', onClick: () => handleSetReplyingTo(reply.id) }, '↩ Reply')
+                                : renderReplyInput(reply.id)
+                        ])
+                    ])
+                ]),
+                renderThreadedReplies(allReplies, reply.id, depth + 1)
+            ])
+        );
+    }, [replyingToId, canReply, currentUser, getFormattedTime, renderReplyInput, handleSetReplyingTo]);
+
+    // ── END REPLY FUNCTIONS ──────────────────────────────────────────
 
     const isAnnotationVisible = useCallback((annotation) => {
         return Math.abs(currentTime - annotation.timestamp) <= 0.5;
@@ -3248,6 +3385,49 @@ export default function Videoannotator({
                                     key: 'date',
                                     className: 'date'
                                 }, getFormattedTime(annotation.createdAt))
+                            ]),
+
+                            // Reply section — inline thread
+                            canReply && createElement('div', {
+                                key: 'reply-section',
+                                className: 'annotation-reply-section',
+                                onClick: e => e.stopPropagation()
+                            }, [
+                                createElement('button', {
+                                    key: 'toggle-btn',
+                                    className: `annotation-reply-btn${openThreadId === annotation.id ? ' annotation-reply-btn--active' : ''}`,
+                                    onClick: e => handleToggleThread(annotation, e)
+                                }, [
+                                    createElement('span', { key: 'icon', className: 'annotation-reply-btn-icon' }, '💬'),
+                                    createElement('span', { key: 'label' },
+                                        getReplyCount(annotation) > 0
+                                            ? `${getReplyCount(annotation)} ${getReplyCount(annotation) === 1 ? 'Reply' : 'Replies'}`
+                                            : 'Reply'
+                                    ),
+                                    createElement('span', { key: 'chevron', className: 'annotation-reply-chevron' },
+                                        openThreadId === annotation.id ? ' ▲' : ' ▼'
+                                    )
+                                ]),
+
+                                openThreadId === annotation.id && createElement('div', {
+                                    key: 'inline-thread',
+                                    className: 'inline-thread'
+                                }, [
+                                    (annotation.replies || []).length > 0 && createElement('div', {
+                                        key: 'replies',
+                                        className: 'inline-thread-replies'
+                                    }, renderThreadedReplies(annotation.replies, annotation.id, 0)),
+
+                                    createElement('div', { key: 'composer', className: 'inline-thread-composer' }, [
+                                        replyingToId !== annotation.id
+                                            ? createElement('button', {
+                                                key: 'reply-root-btn',
+                                                className: 'thread-reply-to-root-btn',
+                                                onClick: () => handleSetReplyingTo(annotation.id)
+                                            }, '↩ Write a reply…')
+                                            : renderReplyInput(annotation.id)
+                                    ])
+                                ])
                             ])
                         ]);
                     }) :

@@ -102,6 +102,13 @@
                     <attributeType name="Boolean"/>
                 </attributeTypes>
             </property>
+            <property key="allowReply" type="attribute" required="false">
+                <caption>Allow Replies to comments</caption>
+                <description>Boolean to control if the users can reply to comments or not</description>
+                <attributeTypes>
+                    <attributeType name="Boolean"/>
+                </attributeTypes>
+            </property>
             <property key="annotationMode" type="attribute" required="false">
                 <caption>Annotation Mode</caption>
                 <description>String to control annotation functionality: "ENABLED", "DISABLED", or "READ_ONLY"</description>
