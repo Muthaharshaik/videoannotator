@@ -60,6 +60,7 @@ export default function Videoannotator({
     const videoOverlaysRef = useRef(null); // NEW: Ref for video overlays container
     const replyInputRef = useRef(null);
     const logEventRef = useRef(null); // NEW: Ref for log event handling
+    const logEntriesRef = useRef([]);
     
     // Core media state
     const [isPlaying, setIsPlaying] = useState(false);
@@ -230,16 +231,8 @@ export default function Videoannotator({
                 detail: detail ? String(detail) : undefined,
                 timestamp: new Date().toISOString()
             };
-            let existing = [];
-            try {
-                const raw = widgetLogs.value;
-                if (raw && raw.trim() !== '' && raw !== '[]') {
-                    const parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed)) existing = parsed;
-                }
-            } catch (_) { existing = []; }
-            const updated = [...existing, entry].slice(-200);
-            const jsonString = JSON.stringify(updated);
+            logEntriesRef.current = [...logEntriesRef.current, entry].slice(-200);
+            const jsonString = JSON.stringify(logEntriesRef.current)
             if (typeof widgetLogs.setValue === 'function') {
                 widgetLogs.setValue(jsonString);
             } else if (widgetLogs.value !== undefined) {
@@ -261,7 +254,7 @@ export default function Videoannotator({
     // ENHANCED: Widget mount/unmount logging with microflow configuration check
     useEffect(() => {
         console.log(`🚀 [Widget ${widgetInstanceId}] VideoAnnotator initialized`);
-        logEvent('INFO', 'Widget initialized', `Instance: ${widgetInstanceId}`);
+        logEventRef.current?.('INFO', 'Widget initialized', `Instance: ${widgetInstanceId}`);
         addDebugLog("=== MICROFLOW CONFIGURATION CHECK ===");
         addDebugLog(`onAnnotationAdd configured: ${!!onAnnotationAdd}`);
         addDebugLog(`onAnnotationDelete configured: ${!!onAnnotationDelete}`);
@@ -285,7 +278,7 @@ export default function Videoannotator({
                 console.log(`🧹 [Widget ${widgetInstanceId}] Cleaning up file input ref`);
             }
         };
-    }, [widgetInstanceId, onAnnotationAdd, onAnnotationDelete, addDebugLog, logEvent]);
+    }, [widgetInstanceId, onAnnotationAdd, onAnnotationDelete, addDebugLog]);
 
     useEffect(() => {
     if (showCommentModal && richTextRef.current) {
