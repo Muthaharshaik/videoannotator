@@ -234,14 +234,20 @@ export default function Videoannotator({
             logEntriesRef.current = [...logEntriesRef.current, entry].slice(-200);
             const jsonString = JSON.stringify(logEntriesRef.current)
             if (typeof widgetLogs.setValue === 'function') {
-                widgetLogs.setValue(jsonString);
+                if (widgetLogs.status === 'available') {
+                    widgetLogs.setValue(jsonString);
+                } else {
+                    console.warn(`[Widget ${widgetInstanceId}] widgetLogs is not available for writing`);
+                }
             } else if (widgetLogs.value !== undefined) {
                 widgetLogs.value = jsonString;
             }
-            if (onLogEvent && typeof onLogEvent.execute === 'function') {
-                onLogEvent.execute();
-            } else if (typeof onLogEvent === 'function') {
-                onLogEvent();
+            if (widgetLogs.status === 'available') {
+                if (onLogEvent && typeof onLogEvent.execute === 'function') {
+                    onLogEvent.execute();
+                } else if (typeof onLogEvent === 'function') {
+                    onLogEvent();
+                }
             }
         } catch (err) {
             console.error(`[Widget ${widgetInstanceId}] logEvent write failed:`, err);
@@ -415,14 +421,14 @@ export default function Videoannotator({
                     calculateVideoRenderingArea();
                 }, 100); // Small delay to ensure video is rendered
                 
-                logEvent('SUCCESS', 'Video loaded successfully',
+                logEventRef.current?.('SUCCESS', 'Video loaded successfully',
                 `duration: ${mediaElement.duration.toFixed(1)}s | file: ${s3FileName?.value}`)
             } else {
-                logEvent('SUCCESS', 'Audio loaded successfully',
+                logEventRef.current?.('SUCCESS', 'Audio loaded successfully',
                 `duration: ${mediaElement.duration.toFixed(1)}s | file: ${s3FileName?.value}`)
             }
         }
-    }, [isAudioFile, widgetInstanceId, calculateVideoRenderingArea, logEvent, s3FileName]);
+    }, [isAudioFile, widgetInstanceId, calculateVideoRenderingArea, s3FileName]);
 
     // ENHANCED: More frequent recalculation triggers for position accuracy
     useEffect(() => {
@@ -707,14 +713,14 @@ export default function Videoannotator({
             if (!awsRegion?.value) missingParams.push('region');
             
             const errorMsg = `Missing required AWS configuration: ${missingParams.join(', ')}`;
-            logEvent('ERROR', 'Media URL generation failed — missing config', errorMsg);
+            logEventRef.current?.('ERROR', 'Media URL generation failed — missing config', errorMsg);
             console.error(`❌ [Widget ${widgetInstanceId}] ${errorMsg}`);
             setMediaError(errorMsg);
             setLoadingMedia(false);
             return;
         }
 
-        logEvent('INFO', 'Generating signed S3 URL',`bucket: ${s3BucketName.value} | file: ${s3FileName.value} | region: ${awsRegion.value}`);
+        logEventRef.current?.('INFO', 'Generating signed S3 URL',`bucket: ${s3BucketName.value} | file: ${s3FileName.value} | region: ${awsRegion.value}`);
             
         const fileName = s3FileName.value;
         const isAudio = detectFileType(fileName);
@@ -740,13 +746,13 @@ export default function Videoannotator({
             const testElement = document.createElement(isAudio ? 'audio' : 'video');
             testElement.onloadedmetadata = () => {
                 console.log(`✅ [Widget ${widgetInstanceId}] ${isAudio ? 'Audio' : 'Video'} metadata loaded successfully`);
-                logEvent('SUCCESS', `${isAudio ? 'Audio' : 'Video'} metadata loaded`, `file: ${fileName}`);
+                logEventRef.current?.('SUCCESS', `${isAudio ? 'Audio' : 'Video'} metadata loaded`, `file: ${fileName}`);
                 setMediaUrl(signedUrl);
                 setLoadingMedia(false);
             };
             testElement.onerror = (error) => {
                 console.error(`❌ [Widget ${widgetInstanceId}] ${isAudio ? 'Audio' : 'Video'} failed to load:`, error);
-                logEvent('ERROR', `${isAudio ? 'Audio' : 'Video'} failed to load`, `file: ${fileName} | error: ${error.message}`);
+                logEventRef.current?.('ERROR', `${isAudio ? 'Audio' : 'Video'} failed to load`, `file: ${fileName} | error: ${error.message}`);
                 setMediaError(`Failed to load ${isAudio ? 'audio' : 'video'}: Please check the file path and AWS configuration`);
                 setLoadingMedia(false);
             };
@@ -754,7 +760,7 @@ export default function Videoannotator({
             setTimeout(() => {
                 if (testElement.readyState === 0) {
                     console.warn(`⏰ [Widget ${widgetInstanceId}] ${isAudio ? 'Audio' : 'Video'} load timeout - displaying anyway`);
-                    logEvent('WARNING', `${isAudio ? 'Audio' : 'Video'} load timeout - Forcing URL Render`, `file: ${fileName}`);
+                    logEventRef.current?.('WARNING', `${isAudio ? 'Audio' : 'Video'} load timeout - Forcing URL Render`, `file: ${fileName}`);
                     setMediaUrl(signedUrl);
                     setLoadingMedia(false);
                 }
@@ -765,11 +771,11 @@ export default function Videoannotator({
             
         } catch (error) {
             console.error(`❌ [Widget ${widgetInstanceId}] Error generating media URL:`, error);
-            logEvent('ERROR', 'Media URL generation failed', `file: ${s3FileName.value} | error: ${error.message}`);
+            logEventRef.current?.('ERROR', 'Media URL generation failed', `file: ${s3FileName.value} | error: ${error.message}`);
             setMediaError(`Failed to generate media URL: ${error.message}`);
             setLoadingMedia(false);
         }
-    }, [s3BucketName, s3FileName, awsAccessKey, awsSecretKey, awsRegion, generateSignedUrl, detectFileType, widgetInstanceId, logEvent]);
+    }, [s3BucketName, s3FileName, awsAccessKey, awsSecretKey, awsRegion, generateSignedUrl, detectFileType, widgetInstanceId]);
 
     // Load media URL when credentials change
     useEffect(() => {
