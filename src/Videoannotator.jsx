@@ -229,6 +229,7 @@ export default function Videoannotator({
             const entry = {
                 widgetInstanceId, level, message,
                 detail: detail ? String(detail) : undefined,
+                fileName: s3FileName?.value || undefined,
                 timestamp: new Date().toISOString()
             };
             logEntriesRef.current = [...logEntriesRef.current, entry].slice(-200);
@@ -252,7 +253,7 @@ export default function Videoannotator({
         } catch (err) {
             console.error(`[Widget ${widgetInstanceId}] logEvent write failed:`, err);
         }
-    }, [widgetInstanceId, widgetLogs, onLogEvent]);
+    }, [widgetInstanceId, widgetLogs, onLogEvent, s3FileName]);
 
     // ── Keep ref in sync ──────────────────────────────────────────────────────
     logEventRef.current = logEvent;
